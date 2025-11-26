@@ -63,6 +63,7 @@
       @media print {
         @page { margin: 8mm; }
         .controls { display: none !important; }
+        .item button, .item .answer { display: none !important; }
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .sheet { padding: 0; }
         .grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
@@ -97,8 +98,34 @@
       }
 
       const QUESTIONS = [
-        // Add questions here as strings, e.g.:
-        // 'Simplify without a calculator: 7 + 6 × 2',
+        'In a study of vocabulary retention, x is the number of hours of weekly practice and y is the number of words remembered on a test. A best-fitting line for the data is y = 3x + 12. One observed student who practiced 7 hours remembered 30 words. According to the best-fitting line, what number of words would be predicted for a student who practices 7 hours?',
+        'A model for the relationship between study hours (x) and quiz score (y) is y = 2x + 1. Two observed data points are (1, 5) and (4, 7). Compute the mean squared error (MSE) of this line on these two points.',
+        'Multiple-choice: Which set of Python import statements correctly prepares for fitting a simple linear regression?\nA) import numpy as np\n   import pandas as pd\n   from sklearn import LinearRegression\nB) import numpy as np\n   import pandas as pd\n   from sklearn.linear_model import LinearRegression\nC) import numpy as np\n   import panda as pd\n   from sklearn.linear_model import LinearRegression\nD) from numpy import *\n   import pandas as pd\n   from sklearn.regression import LinearModel',
+        'Multiple-choice: In Google Colab, after uploading a file named dataset.csv, which command (matching what we used in class) correctly loads it into a DataFrame?\nA) pandas.read_csv(dataset.csv)\nB) read.csv("dataset.csv")\nC) pd.read_csv("dataset.csv")\nD) pd.load_csv("dataset.csv")',
+        'Multiple-choice: Which code turns the column x from DataFrame data into a NumPy column array suitable for scikit-learn?\nA) data.x.values.reshape(1,-1)\nB) data["x"].numpy().reshape(-1,1)\nC) data[["x"]].tolist()\nD) np.array(data).reshape(-1,1)',
+        'Multiple-choice: Which code correctly fits a LinearRegression model using feature matrix X and target vector Y?\nA) model = LinearRegression().fit(X, Y)\nB) model = LinearRegression.fit(X, Y)\nC) model = LinearRegression(); model.fit(Y, X)\nD) model = LinearRegression(); model.fit(X)',
+        'Short answer: In scikit-learn, given a fitted LinearRegression object named reg, how do you access the intercept of the line?',
+        'Short answer: In scikit-learn, given a fitted LinearRegression object named reg, how do you access the slope (coefficient) of the line?',
+        'Short answer: In SQLite, using table plays and the expected yards equation ŷ = (0.12588674*ydstogo + 3.47336519), write a query that returns rusher_player_id and RYOE for rush attempts, sorted by RYOE descending.',
+        'Short answer: In SQLite, write a query returning rusher_player_id and total rush attempts, sorted by attempts descending.',
+        'Short answer: Rewrite the previous query to limit results to rushers with 100 or more attempts.',
+        'Short answer: Write an SQLite query returning rusher_player_id and average RYOE (using ŷ = 0.12588674*ydstogo + 3.47336519), sorted by average RYOE descending.',
+      ];
+
+      // Answers aligned by index with QUESTIONS.
+      const ANSWERS = [
+        'Predicted y = 3(7) + 12 = 21 + 12 = 33',
+        'Line y = 2x + 1: Pred(1)=3, error=5-3=2, squared=4; Pred(4)=9, error=7-9=-2, squared=4; MSE=(4+4)/2=4',
+        'Correct choice: B. A imports wrong path (LinearRegression is in sklearn.linear_model). C misspells pandas (panda). D uses wildcard import plus wrong module path.',
+        'Correct choice: C. A missing quotes and wrong direct pandas usage. B is R syntax. D uses non-existent load_csv function.',
+        'Correct choice: B. A yields row shape (1,n). C returns a Python list, not NumPy 2D array. D wraps whole DataFrame not just column x.',
+        'Correct choice: A. Assigns the instantiated and fitted model (fit returns the estimator). B calls fit on the class (invalid). C swaps X and Y. D omits Y in fit call (incomplete feature/target specification).',
+        'reg.intercept_',
+        'reg.coef_',
+        'select\nrusher_player_id,\nrusher_player_name,\nyards_gained - (0.12588674*ydstogo+3.47336519) as ryoe\nfrom plays\nwhere rush_attempt=1\norder by ryoe desc',
+        'select\nrusher_player_id,\ncount(*) as rush_attempts\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\norder by count(*) desc',
+        'select\nrusher_player_id,\ncount(*) as rush_attempts\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\nhaving count(*) >= 100\norder by count(*) desc',
+        'select\nrusher_player_id,\navg(yards_gained - (0.12588674*ydstogo+3.47336519)) as ryoe\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\norder by ryoe desc',
       ];
 
       function render(questions = QUESTIONS) {
@@ -114,6 +141,25 @@
           body.className = 'q';
           body.textContent = q; // preserve text, pre-wrap in CSS
           item.appendChild(body);
+          // Answer reveal
+          const answerText = ANSWERS[i];
+          if (answerText) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'Show Answer';
+            btn.style.cssText = 'margin-top:4px;font-size:10px;padding:2px 6px;cursor:pointer;';
+            const ans = document.createElement('div');
+            ans.className = 'answer';
+            ans.textContent = answerText;
+            ans.style.cssText = 'display:none;margin-top:4px;font-size:11px;font-style:italic;';
+            btn.addEventListener('click', () => {
+              const visible = ans.style.display === 'block';
+              ans.style.display = visible ? 'none' : 'block';
+              btn.textContent = visible ? 'Show Answer' : 'Hide Answer';
+            });
+            item.appendChild(btn);
+            item.appendChild(ans);
+          }
           el.grid.appendChild(item);
         });
       }
