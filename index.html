@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Practice Test</title>
+    <style>
+      :root {
+        --font-size: 12px;
+        --gap: 8px;
+        --padding: 6px;
+        --border: 1px solid #999;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: #000;
+        background: #fff;
+        font-size: var(--font-size);
+        line-height: 1.2;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 6px 10px;
+        border-bottom: 1px solid #ddd;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 1;
+      }
+      .controls label { font-size: 12px; white-space: nowrap; }
+      .controls .spacer { flex: 1 1 auto; }
+
+      .sheet {
+        padding: 10px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: var(--gap);
+        align-content: start;
+      }
+
+      .item {
+        border: var(--border);
+        padding: var(--padding);
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .number {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .q { white-space: pre-wrap; }
+
+      @media print {
+        @page { margin: 8mm; }
+        .controls { display: none !important; }
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .sheet { padding: 0; }
+        .grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .item { border-color: #777; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls" role="region" aria-label="Controls" title="Display controls (hidden when printing)">
+      <label>
+        Font size
+        <input id="fontSize" type="range" min="10" max="15" value="12" />
+        <span id="fontSizeVal">12px</span>
+      </label>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="sheet">
+      <div id="grid" class="grid" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const el = {
+        grid: $('#grid'),
+        fontSize: $('#fontSize'),
+        fontSizeVal: $('#fontSizeVal'),
+      };
+
+      function setVar(name, value) {
+        document.documentElement.style.setProperty(name, value);
+      }
+
+      const QUESTIONS = [
+        // Add questions here as strings, e.g.:
+        // 'Simplify without a calculator: 7 + 6 × 2',
+      ];
+
+      function render(questions = QUESTIONS) {
+        el.grid.innerHTML = '';
+        questions.forEach((q, i) => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const num = document.createElement('div');
+          num.className = 'number';
+          num.textContent = (i + 1) + ')';
+          item.appendChild(num);
+          const body = document.createElement('div');
+          body.className = 'q';
+          body.textContent = q; // preserve text, pre-wrap in CSS
+          item.appendChild(body);
+          el.grid.appendChild(item);
+        });
+      }
+      // Wire controls
+      el.fontSize.addEventListener('input', () => {
+        const v = el.fontSize.value + 'px';
+        el.fontSizeVal.textContent = v;
+        setVar('--font-size', v);
+      });
+
+      // Init
+      (function init() {
+        render();
+        el.fontSize.dispatchEvent(new Event('input'));
+      })();
+    </script>
+  </body>
+  </html>
