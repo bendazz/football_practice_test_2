@@ -110,6 +110,10 @@
         'Short answer: In SQLite, write a query returning rusher_player_id and total rush attempts, sorted by attempts descending.',
         'Short answer: Rewrite the previous query to limit results to rushers with 100 or more attempts.',
         'Short answer: Write an SQLite query returning rusher_player_id and average RYOE (using ŷ = 0.12588674*ydstogo + 3.47336519), sorted by average RYOE descending.',
+        'Short answer: In SQLite, write a query returning rusher_player_id and one-hot indicators for down: is_2nd_down, is_3rd_down, is_4th_down, for rush attempts only.',
+        'Short answer: Using SQLite and table plays, write a query returning rusher_player_id and average RYOE based on ŷ = 2.471750805961095 + 0.199273*ydstogo + 0.73200072*is_2nd_down + 1.12417315*is_3rd_down + 0.82187461*is_4th_down. Limit to rushers with ≥100 attempts and show the top 10 by average RYOE.',
+        'Short answer: If the offense has EPA = 0.45 on a play, what is the defense\'s EPA for that same play?',
+        'Short answer: Previous down EP = 0.30 and current down EP = 0.90. What is the expected points added (EPA) by the play?',
       ];
 
       // Answers aligned by index with QUESTIONS.
@@ -126,6 +130,10 @@
         'select\nrusher_player_id,\ncount(*) as rush_attempts\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\norder by count(*) desc',
         'select\nrusher_player_id,\ncount(*) as rush_attempts\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\nhaving count(*) >= 100\norder by count(*) desc',
         'select\nrusher_player_id,\navg(yards_gained - (0.12588674*ydstogo+3.47336519)) as ryoe\nfrom plays\nwhere rush_attempt=1\ngroup by rusher_player_id\norder by ryoe desc',
+        'SELECT\n    rusher_player_id,\n    Case\n        when down = 2 then 1\n        else 0\n        end as is_2nd_down,\n\n    Case\n        when down = 3 then 1\n        else 0\n        end as is_3rd_down,\n\n    Case\n        when down = 4 then 1\n        else 0\n        end as is_4th_down\n \nfrom plays\nwhere rush_attempt=1',
+        'with rush_data as (\n    select\n        rusher_player_id,\n        yards_gained,\n        ydstogo,\n        Case\n            when down = 2 then 1\n            else 0\n            end as is_2nd_down,\n\n        Case\n            when down = 3 then 1\n            else 0\n            end as is_3rd_down,\n        Case\n            when down = 4 then 1\n            else 0\n            end as is_4th_down\n    from plays\n    where rush_attempt=1\n)\nselect\n    rusher_player_id,\n    avg(yards_gained - (2.471750805961095 +\n        0.199273 * ydstogo +\n        0.73200072 * is_2nd_down +\n        1.12417315 * is_3rd_down +\n        0.82187461 * is_4th_down\n    )) as ryoe\nfrom rush_data\ngroup by rusher_player_id\nhaving count(*) >= 100\norder by ryoe desc\nlimit 10;',
+        'Defense EPA = -0.45',
+        'EPA = current EP − previous EP = 0.90 − 0.30 = 0.60',
       ];
 
       function render(questions = QUESTIONS) {
